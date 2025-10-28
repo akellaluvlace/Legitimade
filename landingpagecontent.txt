@@ -1,0 +1,93 @@
+LegitimaDe – Authenticity You Can Trust
+LegitimaDe bridges everyday QR code scanning and blockchain security to create a new era of product
+authenticity . With one tap, consumers and brands can scan a product’s QR code and instantly verify its
+origin and status. Each product’s identity is anchored on a decentralized, tamper-proof blockchain ledger, so
+any attempt to falsify or alter the record is immediately detected . The app then displays a green
+checkmark and a “Product is Genuine” message only when the item matches the immutable blockchain
+record .
+The Challenge of Counterfeits
+Counterfeit goods pose a critical threat to both brands and consumers. Fake products – from luxury fashion
+to pharmaceuticals – flood global markets, infringing on IP rights and endangering customers with
+substandard quality . The scale is staggering: recent reports estimate nearly $100 billion in losses from
+counterfeit luxury items alone . In this environment, building trust is essential: brands and buyers need
+a reliable way to prove authenticity at the point of purchase.
+How It Works
+Scan: Use your smartphone to scan the QR code on any product. LegitimaDe then retrieves the
+associated blockchain record and verifies it.
+Verify: The app compares the scanned code with the blockchain ledger. Because blockchain data is
+decentralized and immutable , any mismatch or tampering is instantly detected.
+Result: If the record matches, LegitimaDe shows a green checkmark and “Product is Genuine”
+message; otherwise it flags the item. This instant verification requires no central database—just the
+trust of the blockchain .
+For Brands & Consumers
+Brands: LegitimaDe offers the highest level of brand protection via blockchain-backed verification
+. By embedding each product’s identity on an immutable ledger, brands curb counterfeit sales
+and retain customer trust .
+Consumers: Shoppers gain confidence and transparency. With a quick scan, they see proof of
+authenticity and product provenance, enabling informed buying decisions . The combination
+of QR codes and blockchain means anyone can verify genuineness without relying on a central
+authority.
+Testimonials
+“LegitimaDe gave our brand 100% confidence in product authenticity.” – Alex Brand, CEO of FashionCo
+“I scan every purchase and know it’s real – finally trust in what I buy!” – Jamie Consumer, Verified
+Shopper
+1
+2
+3
+4
+5
+•
+•
+2
+•
+3
+•
+6
+7 6
+•
+8 3
+•
+•
+1
+Our Team: Our team is built on the idea that blockchain’s immutable ledger “makes it virtually impossible to
+alter the information once it’s stored” . We are a visionary group of developers, designers, and supply
+chain experts dedicated to eliminating counterfeits and protecting brands and consumers. For example,
+Alex Johnson (Co-founder & CTO) has deep experience with secure ledger technologies, and Maria Torres
+(Product Lead) is an expert in mobile UX. Together, we’re revolutionizing product verification to protect every
+purchase.
+Sources: LegitimaDe’s approach is inspired by industry insights on blockchain-based product verification
+, combining the accessibility of QR codes with blockchain’s tamper-proof assurance .
+These references support our vision of a future where every product’s authenticity is verifiable by anyone,
+instantly.
+QR codes and blockchain technology: A powerful duo
+https://qrcodekit.com/news/qr-codes-and-blockchain-technology/
+How Blockchain is Transforming the Fight Against Fake Products - Blockchain
+https://blockchain.bakermckenzie.com/2023/11/07/how-blockchain-is-transforming-the-fight-against-fake-products/
+Luxury Goods - Everledger
+https://everledger.io/industry-solutions/luxury-goods/
+2
+1 4 6 2 3
+1 2 3 7
+4 8
+5 6
+2
+
+
+
+for the  makers:
+Johanna Herfter
+
+Co-Founder | Business Development & Strategy
+Award-winning business developer (Oracle, Udemy) with a proven record of building multimillion-euro pipelines in tech and cloud. Former key account lead for brands like Disney and Universal. Expert in SaaS growth strategy, and a passionate community builder.
+
+
+
+Dr. Vaibhav Agarwal
+Founder | Blockchain & Technology Lead
+Postdoctoral Blockchain researcher with 12+ years in academia and industry. PhD in NLP, founder of Envossible IT. Led mission-critical projects for Fortune 500 clients. Agile full-stack developer, known for mastering new tech fast.
+
+
+Nikita Kolesnik:
+(just add me as software engineer typescript, django, react, blah blah blah)
+
+find images in the assets

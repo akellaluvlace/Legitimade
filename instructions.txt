@@ -1,0 +1,1062 @@
+# LegitimaDe Mobile App - AI Implementation Guide
+
+## Project Configuration
+
+### Project Type
+- **Framework**: React Native with Expo
+- **Language**: TypeScript
+- **Platform**: iOS and Android
+- **Development Time**: 48 hours
+- **Purpose**: Hackathon demo with mock data
+
+### Core Requirements
+- 3 in-app screens + 1 external browser link
+- QR code scanning functionality  
+- Mock blockchain verification (always shows "genuine")
+- Dark theme with green accent colors
+- No real backend or blockchain integration needed
+
+---
+
+## Step 1: Project Initialization
+
+### 1.1 Create Expo Project
+```bash
+npx create-expo-app legitimade-app --template blank-typescript
+cd legitimade-app
+```
+
+### 1.2 Install Required Dependencies
+```bash
+# Navigation
+npm install @react-navigation/native @react-navigation/stack
+npm install react-native-screens react-native-safe-area-context
+
+# UI Components
+npm install react-native-paper react-native-vector-icons
+
+# Camera & QR Scanner
+expo install expo-camera expo-barcode-scanner
+
+# Additional utilities
+expo install expo-linking expo-constants
+```
+
+### 1.3 Create Project Structure
+```
+legitimade-app/
+├── src/
+│   ├── screens/
+│   │   ├── LandingScreen.tsx
+│   │   ├── ScannerScreen.tsx
+│   │   └── ResultScreen.tsx
+│   ├── navigation/
+│   │   └── AppNavigator.tsx
+│   ├── constants/
+│   │   ├── colors.ts
+│   │   └── config.ts
+│   ├── components/
+│   │   └── AnimatedCheckmark.tsx
+│   └── types/
+│       └── navigation.ts
+├── assets/
+│   ├── logo.png
+│   └── checkmark.gif
+├── App.tsx
+└── package.json
+```
+
+---
+
+## Step 2: Core Configuration Files
+
+### 2.1 Constants - colors.ts
+```typescript
+// src/constants/colors.ts
+export const colors = {
+  primary: '#1a1a1a',
+  secondary: '#2a2a2a',
+  accent: '#00ff88',
+  error: '#ff4444',
+  text: '#ffffff',
+  textSecondary: '#999999',
+  border: '#333333',
+  success: '#00ff88',
+};
+```
+
+### 2.2 Constants - config.ts
+```typescript
+// src/constants/config.ts
+export const config = {
+  // Replace with actual Solana transaction URL when provided
+  SOLANA_TX_URL: 'https://explorer.solana.com/tx/YOUR_TRANSACTION_HASH?cluster=devnet',
+  ANIMATION_DURATION: 1000,
+  QR_SCAN_DELAY: 1000,
+};
+```
+
+### 2.3 Navigation Types
+```typescript
+// src/types/navigation.ts
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+
+export type RootStackParamList = {
+  Landing: undefined;
+  Scanner: undefined;
+  Result: { qrData: string };
+};
+
+export type LandingScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Landing'>;
+export type ScannerScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Scanner'>;
+export type ResultScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Result'>;
+export type ResultScreenRouteProp = RouteProp<RootStackParamList, 'Result'>;
+```
+
+---
+
+## Step 3: Main App Component
+
+### 3.1 App.tsx
+```typescript
+// App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { StatusBar } from 'expo-status-bar';
+import AppNavigator from './src/navigation/AppNavigator';
+import { colors } from './src/constants/colors';
+
+export default function App() {
+  const theme = {
+    colors: {
+      primary: colors.accent,
+      background: colors.primary,
+      surface: colors.secondary,
+      text: colors.text,
+    },
+  };
+
+  return (
+    <PaperProvider theme={theme}>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        <AppNavigator />
+      </NavigationContainer>
+    </PaperProvider>
+  );
+}
+```
+
+### 3.2 Navigation Setup
+```typescript
+// src/navigation/AppNavigator.tsx
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import LandingScreen from '../screens/LandingScreen';
+import ScannerScreen from '../screens/ScannerScreen';
+import ResultScreen from '../screens/ResultScreen';
+import { RootStackParamList } from '../types/navigation';
+import { colors } from '../constants/colors';
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Landing"
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: colors.primary },
+        animationEnabled: true,
+        cardStyleInterpolator: ({ current: { progress } }) => ({
+          cardStyle: {
+            opacity: progress,
+          },
+        }),
+      }}
+    >
+      <Stack.Screen name="Landing" component={LandingScreen} />
+      <Stack.Screen name="Scanner" component={ScannerScreen} />
+      <Stack.Screen name="Result" component={ResultScreen} />
+    </Stack.Navigator>
+  );
+}
+```
+
+---
+
+## Step 4: Screen Implementations
+
+### 4.1 Landing Screen
+```typescript
+// src/screens/LandingScreen.tsx
+import React from 'react';
+import { View, StyleSheet, Image, Dimensions } from 'react-native';
+import { Button, Text } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { LandingScreenNavigationProp } from '../types/navigation';
+import { colors } from '../constants/colors';
+
+const { width, height } = Dimensions.get('window');
+
+export default function LandingScreen() {
+  const navigation = useNavigation<LandingScreenNavigationProp>();
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        {/* Use placeholder if logo not provided */}
+        <View style={styles.logoPlaceholder}>
+          <Text style={styles.logoText}>LegitimaDe</Text>
+        </View>
+      </View>
+      
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('Scanner')}
+        style={styles.button}
+        labelStyle={styles.buttonLabel}
+        contentStyle={styles.buttonContent}
+      >
+        Verify
+      </Button>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  logoContainer: {
+    marginBottom: height * 0.1,
+  },
+  logoPlaceholder: {
+    width: width * 0.6,
+    height: width * 0.3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.accent,
+    borderRadius: 10,
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.accent,
+  },
+  button: {
+    backgroundColor: colors.accent,
+    borderRadius: 25,
+    elevation: 5,
+  },
+  buttonContent: {
+    paddingHorizontal: 40,
+    paddingVertical: 8,
+  },
+  buttonLabel: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+});
+```
+
+### 4.2 Scanner Screen
+```typescript
+// src/screens/ScannerScreen.tsx
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Alert, Dimensions } from 'react-native';
+import { Text, Button, ActivityIndicator } from 'react-native-paper';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { useNavigation } from '@react-navigation/native';
+import { ScannerScreenNavigationProp } from '../types/navigation';
+import { colors } from '../constants/colors';
+import { config } from '../constants/config';
+
+const { width, height } = Dimensions.get('window');
+
+export default function ScannerScreen() {
+  const navigation = useNavigation<ScannerScreenNavigationProp>();
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
+      setIsLoading(false);
+    })();
+  }, []);
+
+  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+    if (scanned) return;
+    
+    setScanned(true);
+    // Simulate processing delay
+    setTimeout(() => {
+      navigation.navigate('Result', { qrData: data });
+    }, config.QR_SCAN_DELAY);
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={styles.loadingText}>Initializing camera...</Text>
+      </View>
+    );
+  }
+
+  if (hasPermission === null) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.infoText}>Requesting camera permission...</Text>
+      </View>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>No access to camera</Text>
+        <Text style={styles.infoText}>Please enable camera permission in settings</Text>
+        <Button
+          mode="contained"
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          Go Back
+        </Button>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <BarCodeScanner
+        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <View style={styles.overlay}>
+        <View style={styles.topOverlay}>
+          <Text style={styles.instructionText}>Scan Product QR Code</Text>
+        </View>
+        
+        <View style={styles.middleRow}>
+          <View style={styles.sideOverlay} />
+          <View style={styles.scanArea}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
+          </View>
+          <View style={styles.sideOverlay} />
+        </View>
+        
+        <View style={styles.bottomOverlay}>
+          <Button
+            mode="outlined"
+            onPress={() => navigation.goBack()}
+            style={styles.cancelButton}
+            labelStyle={styles.cancelButtonLabel}
+          >
+            Cancel
+          </Button>
+        </View>
+      </View>
+
+      {scanned && (
+        <View style={styles.processingOverlay}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={styles.processingText}>Processing...</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    padding: 20,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  topOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  middleRow: {
+    flexDirection: 'row',
+    height: width * 0.8,
+  },
+  sideOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  scanArea: {
+    width: width * 0.8,
+    height: width * 0.8,
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: colors.accent,
+    borderWidth: 3,
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderBottomWidth: 0,
+    borderRightWidth: 0,
+  },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderTopWidth: 0,
+    borderRightWidth: 0,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+  },
+  bottomOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  instructionText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    borderColor: colors.accent,
+    borderWidth: 2,
+    paddingHorizontal: 30,
+  },
+  cancelButtonLabel: {
+    color: colors.accent,
+    fontSize: 16,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  infoText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  loadingText: {
+    color: colors.text,
+    fontSize: 16,
+    marginTop: 20,
+  },
+  backButton: {
+    backgroundColor: colors.accent,
+    marginTop: 20,
+  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  processingText: {
+    color: colors.text,
+    fontSize: 18,
+    marginTop: 20,
+  },
+});
+```
+
+### 4.3 Result Screen
+```typescript
+// src/screens/ResultScreen.tsx
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Dimensions, Linking, Alert, Animated } from 'react-native';
+import { Text, Button } from 'react-native-paper';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { ResultScreenRouteProp, ResultScreenNavigationProp } from '../types/navigation';
+import { colors } from '../constants/colors';
+import { config } from '../constants/config';
+
+const { width, height } = Dimensions.get('window');
+
+export default function ResultScreen() {
+  const route = useRoute<ResultScreenRouteProp>();
+  const navigation = useNavigation<ResultScreenNavigationProp>();
+  const [checkmarkAnimation] = useState(new Animated.Value(0));
+  const [fadeAnimation] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    // Start animations
+    Animated.sequence([
+      Animated.timing(checkmarkAnimation, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnimation, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handleTrackJourney = async () => {
+    try {
+      const supported = await Linking.canOpenURL(config.SOLANA_TX_URL);
+      if (supported) {
+        await Linking.openURL(config.SOLANA_TX_URL);
+      } else {
+        Alert.alert('Error', 'Cannot open blockchain explorer');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open blockchain explorer');
+    }
+  };
+
+  const checkmarkScale = checkmarkAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 1.2, 1],
+  });
+
+  return (
+    <View style={styles.container}>
+      {/* Main Content - 80% */}
+      <View style={styles.mainContent}>
+        <Animated.View
+          style={[
+            styles.checkmarkContainer,
+            {
+              transform: [{ scale: checkmarkScale }],
+            },
+          ]}
+        >
+          <View style={styles.checkmarkCircle}>
+            <Text style={styles.checkmark}>✓</Text>
+          </View>
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            styles.textContainer,
+            {
+              opacity: fadeAnimation,
+            },
+          ]}
+        >
+          <Text style={styles.genuineText}>Product is Genuine</Text>
+          <Text style={styles.subText}>Verified on blockchain</Text>
+        </Animated.View>
+      </View>
+
+      {/* Bottom Section - 20% */}
+      <Animated.View
+        style={[
+          styles.bottomSection,
+          {
+            opacity: fadeAnimation,
+          },
+        ]}
+      >
+        <Button
+          mode="text"
+          onPress={handleTrackJourney}
+          style={styles.trackButton}
+          labelStyle={styles.trackButtonLabel}
+          icon="link"
+        >
+          Track my Journey
+        </Button>
+
+        <Button
+          mode="outlined"
+          onPress={() => navigation.navigate('Landing')}
+          style={styles.scanAnotherButton}
+          labelStyle={styles.scanAnotherButtonLabel}
+        >
+          Scan Another Product
+        </Button>
+      </Animated.View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.primary,
+  },
+  mainContent: {
+    flex: 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  checkmarkContainer: {
+    marginBottom: 40,
+  },
+  checkmarkCircle: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.accent,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  checkmark: {
+    fontSize: 80,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  textContainer: {
+    alignItems: 'center',
+  },
+  genuineText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  bottomSection: {
+    flex: 0.2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  trackButton: {
+    marginBottom: 10,
+  },
+  trackButtonLabel: {
+    color: colors.accent,
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  scanAnotherButton: {
+    borderColor: colors.textSecondary,
+    borderWidth: 1,
+  },
+  scanAnotherButtonLabel: {
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+});
+```
+
+### 4.4 Animated Checkmark Component (Optional Enhancement)
+```typescript
+// src/components/AnimatedCheckmark.tsx
+import React, { useEffect, useRef } from 'react';
+import { Animated, View, StyleSheet } from 'react-native';
+import { colors } from '../constants/colors';
+
+export default function AnimatedCheckmark() {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 5,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const rotation = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [{ scale: scaleAnim }, { rotate: rotation }],
+        },
+      ]}
+    >
+      <View style={styles.checkmark}>
+        <View style={styles.checkmarkStem} />
+        <View style={styles.checkmarkKick} />
+      </View>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    width: 100,
+    height: 100,
+    position: 'relative',
+  },
+  checkmarkStem: {
+    position: 'absolute',
+    width: 6,
+    height: 60,
+    backgroundColor: colors.accent,
+    left: 50,
+    top: 25,
+    transform: [{ rotate: '45deg' }],
+  },
+  checkmarkKick: {
+    position: 'absolute',
+    width: 6,
+    height: 30,
+    backgroundColor: colors.accent,
+    left: 32,
+    top: 43,
+    transform: [{ rotate: '-45deg' }],
+  },
+});
+```
+
+---
+
+## Step 5: Asset Preparation
+
+### 5.1 Placeholder Logo Creation
+If logo is not provided, create a simple text-based placeholder:
+```typescript
+// In LandingScreen.tsx, use the View with border and text as shown in 4.1
+```
+
+### 5.2 App Icon Configuration
+```json
+// app.json
+{
+  "expo": {
+    "name": "LegitimaDe",
+    "slug": "legitimade-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to camera to scan QR codes."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1a1a"
+      },
+      "permissions": ["CAMERA"]
+    }
+  }
+}
+```
+
+---
+
+## Step 6: Testing Requirements
+
+### 6.1 Functional Tests
+```typescript
+// Test Checklist
+const functionalTests = [
+  { id: 1, test: "App launches without crashing", priority: "critical" },
+  { id: 2, test: "Landing screen displays correctly", priority: "critical" },
+  { id: 3, test: "Verify button navigates to Scanner", priority: "critical" },
+  { id: 4, test: "Camera permission request appears", priority: "critical" },
+  { id: 5, test: "Camera view displays when permission granted", priority: "critical" },
+  { id: 6, test: "Error message shows when permission denied", priority: "high" },
+  { id: 7, test: "QR code scanning triggers navigation", priority: "critical" },
+  { id: 8, test: "Result screen shows green checkmark", priority: "critical" },
+  { id: 9, test: "Product is Genuine text displays", priority: "critical" },
+  { id: 10, test: "Track my Journey opens browser", priority: "critical" },
+  { id: 11, test: "Browser opens correct Solana URL", priority: "critical" },
+  { id: 12, test: "Back navigation works correctly", priority: "high" },
+  { id: 13, test: "Scan Another Product returns to landing", priority: "medium" },
+  { id: 14, test: "Animations play smoothly", priority: "medium" },
+  { id: 15, test: "App works on iOS", priority: "critical" },
+  { id: 16, test: "App works on Android", priority: "critical" },
+];
+```
+
+### 6.2 Visual/UX Tests
+```typescript
+const visualTests = [
+  "Dark theme applied consistently",
+  "Green accent color visible on success",
+  "Text is readable on all screens",
+  "Buttons have appropriate touch targets (min 44x44 pts)",
+  "QR scanner overlay displays correctly",
+  "Checkmark animation is smooth",
+  "Layout responsive on different screen sizes",
+  "No UI elements overlap",
+];
+```
+
+### 6.3 Edge Case Tests
+```typescript
+const edgeCaseTests = [
+  "Handle rapid QR code scanning",
+  "Handle navigation during animation",
+  "Handle app backgrounding during scan",
+  "Handle network unavailable for browser link",
+  "Handle invalid QR code formats",
+  "Handle very long QR code data",
+];
+```
+
+---
+
+## Step 7: Build and Deployment
+
+### 7.1 Development Build Commands
+```bash
+# For development testing with Expo Go
+expo start
+
+# For iOS Simulator
+expo run:ios
+
+# For Android Emulator
+expo run:android
+
+# For physical device with Expo Go
+expo start --tunnel
+```
+
+### 7.2 Production Build Commands
+```bash
+# Build for iOS (requires Apple Developer Account)
+eas build --platform ios
+
+# Build for Android (APK)
+eas build --platform android --profile preview
+
+# Build for both platforms
+eas build --platform all
+```
+
+### 7.3 Environment Variables Setup
+```typescript
+// Create .env file for configuration
+SOLANA_TX_URL=https://explorer.solana.com/tx/ACTUAL_HASH?cluster=devnet
+```
+
+---
+
+## Step 8: Final Deliverables
+
+### 8.1 Required Files
+- Complete source code with all screens implemented
+- Package.json with all dependencies
+- README.md with setup instructions
+- Assets folder with placeholder images if originals not provided
+
+### 8.2 Documentation Template
+```markdown
+# LegitimaDe App - Setup Instructions
+
+## Prerequisites
+- Node.js 16+ installed
+- Expo CLI installed (`npm install -g expo-cli`)
+- Expo Go app on testing device
+
+## Installation
+1. Clone repository
+2. Run `npm install`
+3. Run `expo start`
+4. Scan QR code with Expo Go app
+
+## Configuration
+- Update SOLANA_TX_URL in src/constants/config.ts
+- Replace placeholder logo in assets folder
+
+## Testing
+- Any QR code will show "Product is Genuine"
+- Track Journey button opens Solana explorer
+```
+
+---
+
+## Step 9: Critical Implementation Notes
+
+### 9.1 Mock Data Behavior
+- Scanner accepts ANY QR code
+- Always shows "Product is Genuine"
+- No actual blockchain validation
+- No product database lookup
+- No error states for "fake" products
+
+### 9.2 Required External Input
+- Solana transaction URL from stakeholders (critical)
+- Logo file (optional - use placeholder if not provided)
+- Specific brand colors (optional - use defaults)
+
+### 9.3 Performance Optimizations
+```typescript
+// Implement these for smooth demo
+const optimizations = {
+  images: "Use compressed images under 100KB",
+  animations: "Use native driver for all animations",
+  navigation: "Preload screens in background",
+  camera: "Release camera resources on unmount",
+};
+```
+
+---
+
+## Step 10: Validation Checklist
+
+Before delivery, ensure:
+- [ ] All 3 screens implemented and working
+- [ ] QR scanner functional on physical device
+- [ ] External link opens Solana explorer
+- [ ] Animations are smooth
+- [ ] Dark theme consistent throughout
+- [ ] No crashes during normal flow
+- [ ] Works on both iOS and Android
+- [ ] README includes setup instructions
+- [ ] Code is clean and commented
+- [ ] All mock data clearly marked as such
+
+---
+
+## Error Handling Patterns
+
+```typescript
+// Standard error handling for all async operations
+const handleAsyncOperation = async () => {
+  try {
+    // Operation code
+  } catch (error) {
+    console.error('Operation failed:', error);
+    // User-friendly error message
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  }
+};
+```
+
+---
+
+## Code Quality Standards
+
+1. **TypeScript**: Use proper types for all components and functions
+2. **Comments**: Add comments for complex logic only
+3. **Naming**: Use descriptive variable and function names
+4. **Structure**: Keep components under 200 lines
+5. **Consistency**: Use same patterns throughout app
+6. **Testing**: Test every user flow path minimum once
+
+---
+
+## Delivery Format
+
+1. **Source Code**: Git repository or zip file
+2. **Build**: APK file for Android, TestFlight for iOS (optional)
+3. **Documentation**: README.md with all instructions
+4. **Demo Video**: 2-minute walkthrough (optional)
+
+---
+
+## Time Allocation
+
+Total: 10-14 hours active development
+
+1. **Setup & Configuration**: 2 hours
+2. **Landing Screen**: 1 hour
+3. **Scanner Screen**: 3 hours
+4. **Result Screen**: 2 hours
+5. **Styling & Animations**: 2 hours
+6. **Testing & Debugging**: 2 hours
+7. **Documentation & Build**: 2 hours
+
+---
+
+## Success Criteria
+
+The app is successful when:
+1. ✅ Runs without crashing
+2. ✅ QR scanner works reliably
+3. ✅ Shows "Product is Genuine" for any scan
+4. ✅ Opens Solana explorer link
+5. ✅ Looks professional on camera
+6. ✅ Works on real devices
+
+---
+
+This completes the implementation guide. Follow steps sequentially for best results.
